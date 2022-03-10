@@ -1,5 +1,6 @@
 public class Encryptor
 {
+
     /** A two-dimensional array of single-character strings, instantiated in the constructor */
     private String[][] letterBlock;
 
@@ -107,25 +108,32 @@ public class Encryptor
      */
     public String decryptMessage(String encryptedMessage)
     {
+        String msg = "";
         String a = encryptedMessage;
-        String sub = "";
-        while (a.length() > numRows * numCols) {
-            fillBlock(a.substring(0, numRows * numCols));
+        while (a.length() > 0) {
+            String[][] decrypt = new String[numRows][numCols];
             for (int i = 0; i < numCols; i++) {
                 for (int p = 0; p < numRows; p++) {
-                    sub = sub + letterBlock[i][p];
+                    decrypt[p][i] = a.substring(0, 1);
+                    a = a.substring(1);
                 }
             }
-            a = a.substring(numRows*numCols);
-        }
-        fillBlock(a);
-        sub = sub+encryptBlock();
-        for (int i = 0; i < encryptedMessage.length() - 1; i++) {
-            if (encryptedMessage.charAt(i) == 'A' && encryptedMessage.charAt(i+1) == 'A') {
-                a = a.substring(0, i);
-                break;
+            for (String[] row : decrypt) {
+                for (String str : row) {
+                    msg = msg + str;
+                }
             }
         }
-        return a;
+        for (int i = msg.length()-1; i > 0; i--) {
+            if (!(msg.charAt(i) == 'A')) {
+                break;
+            }
+            else {
+                msg = msg.substring(0, i);
+            }
+        }
+        return msg;
     }
+    
+    
 }
