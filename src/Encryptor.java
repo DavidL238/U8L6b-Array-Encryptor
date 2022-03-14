@@ -80,8 +80,72 @@ public class Encryptor
             a = a.substring(numRows*numCols);
         }
         fillBlock(a);
-        sub = sub+encryptBlock();
+        sub = sub + encryptBlock();
         return sub;
+    }
+
+    /** Encrypts a message and Shifts the columns before returning the encrypted String
+     *
+     * @param message the string to be encrypted
+     * @param shift the number of columns the block will shift (leftwards)
+     * @return the encrypted message; if message is the empty string, returns the empty string
+     */
+    public String encryptMessage(String message, int shift) {
+        String a = message;
+        String sub = "";
+        while (a.length() > numRows * numCols) {
+            fillBlock(a.substring(0, numRows * numCols));
+            switchMajor(letterBlock);
+            shiftColumn(letterBlock, shift, true);
+            switchMajor(letterBlock);
+            sub = sub + encryptBlock();
+            a = a.substring(numRows*numCols);
+        }
+        fillBlock(a);
+        switchMajor(letterBlock);
+        shiftColumn(letterBlock, shift, true);
+        switchMajor(letterBlock);
+        sub = sub + encryptBlock();
+        return sub;
+    }
+
+    public String[][] switchMajor(String[][] input) {
+        String[][] rtnStr = new String[input[0].length][input.length];
+        for (int i = 0; i < input[0].length; i++) {
+            for (int p = 0; p < input.length; p++) {
+                rtnStr[i][p] = input[p][i];
+            }
+        }
+        return rtnStr;
+    }
+
+    public void shiftColumn(String[][] input, int shift, boolean encrypt) {
+        if (encrypt) {
+            for (int i = 0; i < shift; i++) {
+                for (int p = 0; p < input.length; p++) {
+                    String[] firstRow = input[0].clone();
+                    if (i < input.length-1) {
+                        input[i] = input[i+1];
+                    }
+                    else {
+                        input[i] = firstRow;
+                    }
+                }
+            }
+        }
+        else {
+            for (int i = 0; i < shift; i++) {
+                for (int p = input.length-1; p >= 0; p--) {
+                    String[] lastRow = input[input.length-1].clone();
+                    if (i > 0) {
+                        input[i] = input[i+1];
+                    }
+                    else {
+                        input[i] = lastRow;
+                    }
+                }
+            }
+        }
     }
 
     /**  Decrypts an encrypted message. All filler 'A's that may have been
@@ -114,8 +178,13 @@ public class Encryptor
             String[][] decrypt = new String[numRows][numCols];
             for (int i = 0; i < numCols; i++) {
                 for (int p = 0; p < numRows; p++) {
-                    decrypt[p][i] = a.substring(0, 1);
-                    a = a.substring(1);
+                    if (a.length() > 0) {
+                        decrypt[p][i] = a.substring(0, 1);
+                        a = a.substring(1);
+                    }
+                    else {
+                        return null;
+                    }
                 }
             }
             for (String[] row : decrypt) {
@@ -134,6 +203,42 @@ public class Encryptor
         }
         return msg;
     }
-    
+
+    public String decryptMessage(String encryptedMessage, int shift)
+    {
+        String msg = "";
+        String a = encryptedMessage;
+        while (a.length() > 0) {
+            String[][] decrypt = new String[numRows][numCols];
+            for (int i = 0; i < numCols; i++) {
+                for (int p = 0; p < numRows; p++) {
+                    if (a.length() > 0) {
+                        decrypt[p][i] = a.substring(0, 1);
+                        a = a.substring(1);
+                    }
+                    else {
+                        return null;
+                    }
+                }
+            }
+            switchMajor(decrypt);
+            shiftColumn(decrypt, shift, false);
+            switchMajor(decrypt);
+            for (String[] row : decrypt) {
+                for (String str : row) {
+                    msg = msg + str;
+                }
+            }
+        }
+        for (int i = msg.length()-1; i > 0; i--) {
+            if (!(msg.charAt(i) == 'A')) {
+                break;
+            }
+            else {
+                msg = msg.substring(0, i);
+            }
+        }
+        return msg;
+    }
     
 }
