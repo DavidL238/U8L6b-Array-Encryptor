@@ -1,3 +1,6 @@
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
 public class Encryptor
 {
 
@@ -82,6 +85,7 @@ public class Encryptor
         fillBlock(a);
         sub = sub + encryptBlock();
         return sub;
+
     }
 
     /** Encrypts a message and Shifts the columns before returning the encrypted String
@@ -96,14 +100,18 @@ public class Encryptor
         while (a.length() > numRows * numCols) {
             fillBlock(a.substring(0, numRows * numCols));
             switchMajor(letterBlock);
-            shiftColumn(letterBlock, shift, true);
+            for (int i = 0; i < shift; i++) {
+                shiftColumn(letterBlock, true);
+            }
             switchMajor(letterBlock);
             sub = sub + encryptBlock();
             a = a.substring(numRows*numCols);
         }
         fillBlock(a);
         switchMajor(letterBlock);
-        shiftColumn(letterBlock, shift, true);
+        for (int i = 0; i < shift; i++) {
+            shiftColumn(letterBlock, true);
+        }
         switchMajor(letterBlock);
         sub = sub + encryptBlock();
         return sub;
@@ -116,36 +124,29 @@ public class Encryptor
                 rtnStr[i][p] = input[p][i];
             }
         }
-        return rtnStr;
+        for (int i = 0; i < input.length; i++) {
+            for (int p = 0; p < input[i].length; p++) {
+                input[i][p] = rtnStr[i][p];
+            }
+        }
+        return input;
     }
 
-    public void shiftColumn(String[][] input, int shift, boolean encrypt) {
-        if (encrypt) {
-            for (int i = 0; i < shift; i++) {
-                for (int p = 0; p < input.length; p++) {
-                    String[] firstRow = input[0].clone();
-                    if (i < input.length-1) {
-                        input[i] = input[i+1];
+    public void shiftColumn(String[][] input, boolean encrypt) {
+        String[][] temp = switchMajor(input).clone();
+        String[] firstCol = temp[0].clone();
+        switchMajor (input);
+            for (int c = 0; c < input[0].length; c++) {
+                if (c < input[0].length - 1) {
+                    for (int r = 0; r < input.length; r++) {
+                        input[r][c] = input[r][c + 1];
                     }
-                    else {
-                        input[i] = firstRow;
-                    }
-                }
-            }
-        }
-        else {
-            for (int i = 0; i < shift; i++) {
-                for (int p = input.length-1; p >= 0; p--) {
-                    String[] lastRow = input[input.length-1].clone();
-                    if (i > 0) {
-                        input[i] = input[i+1];
-                    }
-                    else {
-                        input[i] = lastRow;
+                } else {
+                    for (int z = 0; z < input.length; z++) {
+                        input[z][c] = firstCol[z];
                     }
                 }
             }
-        }
     }
 
     /**  Decrypts an encrypted message. All filler 'A's that may have been
@@ -222,7 +223,9 @@ public class Encryptor
                 }
             }
             switchMajor(decrypt);
-            shiftColumn(decrypt, shift, false);
+            for (int i = 0; i < numCols - shift; i++) {
+                shiftColumn(decrypt, false);
+            }
             switchMajor(decrypt);
             for (String[] row : decrypt) {
                 for (String str : row) {
